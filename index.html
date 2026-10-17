@@ -10,11 +10,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800;900&family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Playfair+Display:ital,wght@1,700&display=swap">
 <meta name="theme-color" content="#05081a">
-<link rel="canonical" href="https://willington123.github.io/AdsStudio/">
+<link rel="canonical" href="https://adsstudio.lat/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Ads Studio · Haz anuncios que venden">
 <meta property="og:description" content="Editor de video gratuito para Windows y Mac, hecho para crear anuncios. Sin marca de agua y sin crear cuenta.">
-<meta property="og:url" content="https://willington123.github.io/AdsStudio/">
+<meta property="og:url" content="https://adsstudio.lat/">
 <meta name="twitter:card" content="summary">
 <style>
 /* Layout: la página entera es un proyecto de video. El hero es un editor que
@@ -852,6 +852,9 @@ Algodón suave, tallas de la S a la XL.
 <script>
 // Descargas: GitHub Releases (los enlaces de la versión 1.0.5 sirven si no hay conexión con GitHub).
 const RELEASES = 'willington123/AdsStudio'
+// Estadísticas (GoatCounter, sin cookies): el código del sitio en goatcounter.com.
+// Solo cuenta en la página publicada (adsstudio.lat / GitHub Pages), no en pruebas ni vistas previas.
+const GOATCOUNTER = 'wicafi16'
 
 const $ = (s, r = document) => r.querySelector(s)
 const $$ = (s, r = document) => [...r.querySelectorAll(s)]
@@ -890,6 +893,18 @@ function whenVisible(el, start, stop) {
   new IntersectionObserver((es) => es.forEach((e) => e.isIntersecting ? start() : stop && stop()), { threshold: 0.05 }).observe(el)
 }
 
+// ============ Estadísticas ============
+const stats = GOATCOUNTER && /(^|\.)adsstudio\.lat$|\.github\.io$/.test(location.hostname)
+if (stats) {
+  const sc = document.createElement('script')
+  sc.async = true
+  sc.src = 'https://gc.zgo.at/count.js'
+  sc.dataset.goatcounter = `https://${GOATCOUNTER}.goatcounter.com/count`
+  document.head.appendChild(sc)
+}
+/** Cuenta un evento (p. ej. clic en «Descargar para Windows»). */
+const track = (path, title) => { if (stats && window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path, title, event: true }) }
+
 // ============ Descargas ============
 ;(() => {
   const cards = { win: $('[data-os="win"]'), 'mac-arm': $('[data-os="mac-arm"]'), 'mac-intel': $('[data-os="mac-intel"]') }
@@ -906,7 +921,9 @@ function whenVisible(el, start, stop) {
       if (/Intel/i.test(gpu)) os = 'mac-intel'
     } catch (e) {}
   }
+  for (const [key, card] of Object.entries(cards)) card.querySelector('[data-dl]').addEventListener('click', () => track(`descarga-${key}`, `Descarga ${key}`))
   const hero = $('#hero-dl')
+  hero.addEventListener('click', () => { if (os && hero.href.includes('/releases/')) track(`descarga-${os}`, `Descarga ${os} (botón principal)`) })
   const applyHero = () => {
     if (!os || !cards[os]) return
     const card = cards[os]
